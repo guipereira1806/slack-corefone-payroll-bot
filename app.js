@@ -4,10 +4,6 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const csv = require('csv-parser');
-const path = require('path');
-
-// Verifica se fetch já está disponível (Node.js >= 18)
-const fetch = global.fetch || ((...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args)));
 
 // Configuração do servidor Express
 const app = express();
@@ -19,7 +15,7 @@ const slackApp = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
 
-// Armazena os IDs das mensagens enviadas
+// Armazena mensagens enviadas
 const sentMessages = {};
 
 // Middleware para processar JSON
@@ -27,10 +23,11 @@ app.use(express.json());
 
 // Rota para upload de CSV
 app.post('/upload', upload.single('file'), async (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No se ha enviado ningún archivo.');
+  }
+
   try {
-    if (!req.file) {
-      return res.status(400).send('No se ha enviado ningún archivo.');
-    }
     const filePath = req.file.path;
     const data = await readCsvFile(filePath);
 
@@ -55,59 +52,4 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     fs.unlinkSync(filePath);
     res.status(200).send('¡Hoja de cálculo procesada con éxito!');
   } catch (error) {
-    console.error('Error al procesar la hoja de cálculo:', error);
-    res.status(500).send('Error al procesar la hoja de cálculo.');
-  }
-});
-
-// Função para ler CSV
-function readCsvFile(filePath) {
-  return new Promise((resolve, reject) => {
-    const data = [];
-    fs.createReadStream(filePath)
-      .pipe(csv())
-      .on('data', (row) => data.push(row))
-      .on('end', () => resolve(data))
-      .on('error', (error) => reject(error));
-  });
-}
-
-// Função para gerar mensagem
-function generateMessage(name, salary, faltas, feriadosTrabalhados) {
-  return `
-:wave: *¡Hola, ${name}!*
-Esperamos que estés bien. Te compartimos los detalles de tu salario de este mes.
-
-*Valor del salario a pagar:* US$${salary}
-
-*Detalles adicionales:*
-• Faltas: ${faltas}.
-• Feriados trabajados: ${feriadosTrabalhados}.
-
-Por favor, confirma con un ✅.
-`;
-}
-
-// Evento de reação
-slackApp.event('reaction_added', async ({ event }) => {
-  const { reaction, item } = event;
-  if (reaction === 'white_check_mark' && sentMessages[item.ts]) {
-    const { user: slackUserId, name } = sentMessages[item.ts];
-    await slackApp.client.chat.postMessage({
-      channel: process.env.CHANNEL_ID,
-      text: `Agente ${name} (@${slackUserId}) confirmó la recepción.`,
-    });
-  }
-});
-
-// Configuração do servidor Express para rodar o Bolt junto
-const PORT = process.env.PORT || 3000;
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-});
-
-// Conecta o Bolt ao Express
-(async () => {
-  await slackApp.start();
-  console.log(`⚡️ Slack Bolt app conectado ao servidor Express!`);
-})();
+    console.error('Error al
