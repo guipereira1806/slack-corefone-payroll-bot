@@ -108,7 +108,7 @@ Esperamos que estés bien. Pasamos por aquí para compartir los detalles de tu s
 • La factura debe emitirse hasta el _último día hábil del mes_.
 • Al emitir la factura, incluye el valor del tipo de cambio utilizado y el mes de referencia. Aquí tienes un ejemplo:
   \`\`\`
-  Honorarios <mes> - Asesoramiento de atención al cliente + cambio utilizado (US$ 1 = ARS $950,55)
+  Honorarios <mes> - Asesoramiento de atención al cliente + cambio utilizado (US$ 1 = ARS$ 955,55)
   \`\`\`
 
 *Detalles adicionales:*
@@ -230,12 +230,45 @@ app.head('/', (req, res) => {
   res.status(200).end();
 });
 
-// Conecta o Bolt ao servidor Express
-slackApp.start(process.env.PORT || 3000).then(() => {
-  console.log(`⚡️ La aplicación Slack Bolt está funcionando en el puerto ${process.env.PORT || 3000}!`);
+// Cria diretório de uploads se não existir
+if (!fs.existsSync('uploads')) {
+  fs.mkdirSync('uploads');
+}
+
+// Definindo a porta - usamos a variável PORT do ambiente ou porta diferente (3000)
+const PORT = process.env.PORT || 3000;
+
+// Usando o mesmo servidor web para Express e Bolt
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Servidor Express iniciado na porta ${PORT}`);
+  
+  // Inicializa o Bolt após o servidor Express estar rodando
+  slackApp.start().then(() => {
+    console.log('⚡️ Aplicación Slack Bolt iniciada y conectada al servidor Express');
+  }).catch(err => {
+    console.error('Error al iniciar Bolt:', err);
+  });
 });
 
-// Inicia o servidor Express
-app.listen(process.env.PORT || 3000, () => {
-  console.log(`🚀 El servidor Express está funcionando en el puerto ${process.env.PORT || 3000}!`);
+// Manipulação de erros e fechamento gracioso
+process.on('SIGINT', () => {
+  console.log('Cerrando la aplicación...');
+  server.close(() => {
+    console.log('Servidor Express cerrado');
+    process.exit(0);
+  });
+});
+
+process.on('SIGTERM', () => {
+  console.log('Recibida señal de terminación, cerrando aplicación...');
+  server.close(() => {
+    console.log('Servidor Express cerrado');
+    process.exit(0);
+  });
+});
+
+// Tratamento de exceções não capturadas
+process.on('uncaughtException', (err) => {
+  console.error('Error no capturado:', err);
+  // Continuamos executando em vez de fechar
 });
