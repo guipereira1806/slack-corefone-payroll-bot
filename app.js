@@ -6,18 +6,30 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const path = require('path');
 
+// Importa fetch (solo si Node.js es < 18.x)
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
+// Crea el servidor Express
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
+// Inicializa la app de Slack SIN Socket Mode
 const slackApp = new App({
   token: process.env.SLACK_BOT_TOKEN,
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
 
+// Middleware para analizar JSON
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Conecta Express con Slack Bolt
+app.use('/slack/events', slackApp.receiver.router);
+
+// Almacena los mensajes enviados para rastrear reacciones
 const sentMessages = {};
 
+// Ruta para recibir archivos mediante Slash Command
 app.post('/upload', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
@@ -41,15 +53,10 @@ app.post('/upload', upload.single('file'), async (req, res) => {
           text: message,
         });
         console.log(`Mensaje enviado a ${agentName} (ID: ${slackUserId}):`, message);
+
         sentMessages[result.ts] = { user: slackUserId, name: agentName };
       }
     }
-
-    const channelId = req.body.channel_id;
-    await slackApp.client.chat.postMessage({
-      channel: channelId,
-      text: '¡Hoja de cálculo procesada! ✅',
-    });
 
     fs.unlinkSync(filePath);
     res.status(200).send('¡Hoja de cálculo procesada con éxito!');
@@ -59,6 +66,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   }
 });
 
+// Función para leer archivo CSV
 function readCsvFile(filePath) {
   return new Promise((resolve, reject) => {
     const data = [];
@@ -70,43 +78,54 @@ function readCsvFile(filePath) {
   });
 }
 
-function generateMessage(name, salary, faltas, feriadosTrabalhados) {
-  return `:wave: ¡Hola ${name}!
-Esperamos que todo esté bien. Aquí están los detalles de tu salario correspondiente a este mes.
+// Función para generar el mensaje personalizado
+def generateMessage(name, salary, faltas, feriadosTrabalhados) {
+  const faltasText = faltas > 0 ? `tuvo *${faltas} faltas*` : '*no tuvo faltas*';
+  const feriadosText = feriadosTrabalhados > 0 ? `trabajó en *${feriadosTrabalhados} feriados*` : '*no trabajó en ningún feriado*';
 
-*Valor del salario a pagar este mes:* US$${salary}
+  return `
+:wave: *¡Hola ${name}!*
+Esperamos que estés bien. Aquí están los detalles de tu salario de este mes.
 
-*Instrucciones para emisión de la factura:*
+*Valor del salario a pagar:* US$${salary}
+
+*Instrucciones para la emisión de la factura:*
 • La factura debe emitirse hasta el _último día hábil del mes_.
-• Al emitirla, incluye el tipo de cambio utilizado y el mes de referencia. Ejemplo:
+• Debe incluir el tipo de cambio utilizado y el mes de referencia. Ejemplo:
   \`\`\`
-  Honorarios <mes> - Asesoramiento de atención al cliente + tipo de cambio utilizado (US$ 1 = ARS $950)
+  Honorarios <mes> - Asesoramiento de atención al cliente + tipo de cambio utilizado (US$ 1 = ARS $950,18)
   \`\`\`
 
 *Detalles adicionales:*
-• Faltas: ${faltas ? `hubo *${faltas} faltas*` : '*no hubo faltas*'}.
-• Feriados trabajados: ${feriadosTrabalhados ? `trabajó en *${feriadosTrabalhados} feriados*` : '*no trabajó en ningún feriado*'}.
+• Faltas: ${faltasText}.
+• Feriados trabajados: ${feriadosText}.
 
-Por favor, confirma que has recibido este mensaje y aceptas los valores reaccionando con ✅ (*check*).
+Si no hay pendientes, puedes emitir la factura con estos valores hasta el último día hábil del mes.
+Por favor, confirma que recibiste este mensaje y aceptas los valores reaccionando con ✅ (*check*).
 
-_Atentamente,_  
-*Supervisión Corefone AR/LATAM*`;
+¡Gracias por tu atención y excelente trabajo!
+_Atentamente,_
+*Supervisión Corefone LATAM*
+  `;
 }
 
+// Escucha eventos de reacciones
 slackApp.event('reaction_added', async ({ event }) => {
-  const { reaction, item } = event;
-  if (reaction === 'white_check_mark' && sentMessages[item.ts]) {
-    const { user: slackUserId, name } = sentMessages[item.ts];
+  if (event.reaction === 'white_check_mark' && sentMessages[event.item.ts]) {
+    const { user: slackUserId, name } = sentMessages[event.item.ts];
     await slackApp.client.chat.postMessage({
       channel: process.env.CHANNEL_ID,
-      text: `Agente ${name} (@${slackUserId}) ha confirmado la recepción del salario y está de acuerdo con los valores.`,
+      text: `El agente ${name} (@${slackUserId}) confirmó la recepción del salario y está de acuerdo con los valores.`,
     });
   }
 });
 
-app.use('/slack/events', slackApp.receiver.router);
+// Ruta para verificar el estado del bot
+app.get('/', (req, res) => {
+  res.status(200).send('¡El bot está en ejecución!');
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 ¡El servidor Express está ejecutándose en el puerto ${PORT}!`);
+  console.log(`🚀 ¡Servidor Express ejecutándose en el puerto ${PORT}!`);
 });
