@@ -103,7 +103,7 @@ Por favor, confirma que recibiste este mensaje y aceptas los valores reaccionand
 
 ¡Gracias por tu atención y excelente trabajo!
 _Atentamente,_  
-*Supervisión Corefone LATAM*
+*Supervisión Corefone AR/LATAM*
   `;
 }
 
