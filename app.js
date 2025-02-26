@@ -9,7 +9,6 @@ const path = require('path');
 // Importa fetch (solo si Node.js es < 18.x)
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
-// Crea el servidor Express
 const app = express();
 const upload = multer({ dest: 'uploads/' });
 
@@ -19,7 +18,7 @@ const slackApp = new App({
   signingSecret: process.env.SLACK_SIGNING_SECRET,
 });
 
-// Middleware para analizar JSON
+// Middleware para analizar JSON y formularios
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -53,7 +52,6 @@ app.post('/upload', upload.single('file'), async (req, res) => {
           text: message,
         });
         console.log(`Mensaje enviado a ${agentName} (ID: ${slackUserId}):`, message);
-
         sentMessages[result.ts] = { user: slackUserId, name: agentName };
       }
     }
@@ -78,11 +76,11 @@ function readCsvFile(filePath) {
   });
 }
 
-// Función para generar el mensaje personalizado
-def generateMessage(name, salary, faltas, feriadosTrabalhados) {
+// Función para generar el mensaje personalizado en español latinoamericano
+function generateMessage(name, salary, faltas, feriadosTrabalhados) {
   const faltasText = faltas > 0 ? `tuvo *${faltas} faltas*` : '*no tuvo faltas*';
   const feriadosText = feriadosTrabalhados > 0 ? `trabajó en *${feriadosTrabalhados} feriados*` : '*no trabajó en ningún feriado*';
-
+  
   return `
 :wave: *¡Hola ${name}!*
 Esperamos que estés bien. Aquí están los detalles de tu salario de este mes.
@@ -104,7 +102,7 @@ Si no hay pendientes, puedes emitir la factura con estos valores hasta el últim
 Por favor, confirma que recibiste este mensaje y aceptas los valores reaccionando con ✅ (*check*).
 
 ¡Gracias por tu atención y excelente trabajo!
-_Atentamente,_
+_Atentamente,_  
 *Supervisión Corefone LATAM*
   `;
 }
@@ -125,6 +123,7 @@ app.get('/', (req, res) => {
   res.status(200).send('¡El bot está en ejecución!');
 });
 
+// Inicia el servidor Express en el puerto asignado (Render asigna automáticamente el puerto a través de process.env.PORT)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 ¡Servidor Express ejecutándose en el puerto ${PORT}!`);
