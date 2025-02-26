@@ -100,14 +100,14 @@ slackApp.event('reaction_added', async ({ event }) => {
   }
 });
 
-// Servidor Express
+// Configuração do servidor Express para rodar o Bolt junto
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });
 
-// Inicia o Slack Bolt
+// Conecta o Bolt ao Express
 (async () => {
-  await slackApp.start(PORT);
-  console.log(`⚡️ Slack Bolt app rodando na porta ${PORT}!`);
+  await slackApp.start();
+  console.log(`⚡️ Slack Bolt app conectado ao servidor Express!`);
 })();
