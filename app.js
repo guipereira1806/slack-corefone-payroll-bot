@@ -134,7 +134,7 @@ Por favor, confirma que has recibido este mensaje y estás de acuerdo con los va
 
 ¡Agradecemos tu atención y te deseamos un excelente trabajo!
 _Atentamente,_  
-*Supervisión Corefone BR*
+*Supervisión Corefone AR/LATAM*
 `;
 }
 
