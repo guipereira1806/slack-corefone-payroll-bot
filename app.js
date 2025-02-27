@@ -121,7 +121,7 @@ Esperamos que estés bien. Pasamos por aquí para compartir los detalles de tu s
 • La factura debe emitirse hasta el _último día hábil del mes_.
 • Al emitir la factura, incluye el tipo de cambio utilizado y el mes de referencia. Sigue un ejemplo:
   \`\`\`
-  Honorarios <mes> - Asesoramiento de atención al cliente + cambio utilizado (US$ 1 = BR$ 5,55)
+  Honorarios <mes> - Asesoramiento de atención al cliente + cambio utilizado (US$ 1 = ARS$ 975,55)
   \`\`\`
 
 *Detalles adicionales:*
