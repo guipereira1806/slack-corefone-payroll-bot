@@ -53,6 +53,7 @@ const slackApp = new App({
 
 // Store sent messages for tracking reactions
 const sentMessages = new Map();
+const processedFiles = new Set(); // Armazena os file_id já processados
 
 // Utility functions
 const logger = {
@@ -327,6 +328,14 @@ slackApp.event('message', async ({ event, context, say }) => {
 slackApp.event('file_shared', async ({ event, context }) => {
   try {
     const { file_id, channel_id } = event;
+
+    // Se o arquivo já foi processado, ignora o reprocessamento
+    if (processedFiles.has(file_id)) {
+      console.log(`Archivo ${file_id} ya fue procesado, ignorando.`);
+      return;
+    }
+    processedFiles.add(file_id);
+
     logger.info(`File shared`, { fileId: file_id, channelId: channel_id });
 
     // Get file info
