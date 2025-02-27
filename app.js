@@ -31,7 +31,7 @@ const upload = multer({
     if (file.mimetype === 'text/csv') {
       cb(null, true);
     } else {
-      cb(new Error('Solo se permiten archivos CSV'));
+      cb(new Error('Only CSV files are allowed'));
     }
   }
 });
@@ -94,47 +94,47 @@ function readCsvFile(filePath) {
 }
 
 /**
- * Generate personalized message for a user
+ * Generate personalized message for a user in Spanish
  * @param {string} name - User's name
  * @param {number} salary - User's salary
  * @param {number} faltas - Number of absences
  * @param {number} feriadosTrabalhados - Number of holidays worked
- * @returns {string} - Formatted message
+ * @returns {string} - Formatted message in Spanish
  */
 function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
   const faltasText = faltas === 1 
-    ? `hubo *${faltas} falta*` 
+    ? `hubo *${faltas} ausencia*` 
     : faltas > 1 
-      ? `hubo *${faltas} faltas*` 
-      : '*no hubo faltas*';
+      ? `hubo *${faltas} ausencias*` 
+      : '*no hubo ausencias*';
   
   const feriadosText = feriadosTrabalhados === 1 
-    ? `trabajó en *${feriadosTrabalhados} feriado*` 
+    ? `trabajó en *${feriadosTrabalhados} día festivo*` 
     : feriadosTrabalhados > 1 
-      ? `trabajó en *${feriadosTrabalhados} feriados*` 
-      : '*no trabajó en ningún feriado*';
+      ? `trabajó en *${feriadosTrabalhados} días festivos*` 
+      : '*no trabajó en ningún día festivo*';
 
   return `:wave: *¡Hola, ${name}!*
-Esperamos que estés bien. Te escribimos para compartir los detalles de tu salario correspondiente a este mes.
+Esperamos que estés bien. Pasamos por aquí para compartir los detalles de tu salario correspondiente a este mes.
 
 *Valor del salario a pagar este mes:* US$${salary}
 
-*Instrucciones para emitir la factura:*
-• La factura debe emitirse antes del _último día hábil del mes_.
-• Al emitir la factura, incluye el valor del tipo de cambio utilizado y el mes de referencia. Ejemplo:
+*Instrucciones para la emisión de la factura:*
+• La factura debe emitirse hasta el _último día hábil del mes_.
+• Al emitir la factura, incluye el tipo de cambio utilizado y el mes de referencia. Sigue un ejemplo:
   \`\`\`
-  Honorarios <mes> - Asesoramiento de atención al cliente + tipo de cambio utilizado (US$ 1 = BR$ 5,55)
+  Honorarios <mes> - Asesoramiento de atención al cliente + cambio utilizado (US$ 1 = BR$ 5,55)
   \`\`\`
 
 *Detalles adicionales:*
-• Faltas: ${faltasText}.
-• Feriados trabajados: ${feriadosText}.
+• Ausencias: ${faltasText}.
+• Días festivos trabajados: ${feriadosText}.
 
-*Si no hay pendientes*, puedes emitir la factura con los valores mencionados antes del último día hábil del mes.
+*Si no hay pendientes*, puedes emitir la factura con los valores anteriores hasta el último día hábil del mes.
 
-Por favor, confirma que recibiste este mensaje y que estás de acuerdo con los valores reaccionando con un ✅ (*check*).
+Por favor, confirma que has recibido este mensaje y estás de acuerdo con los valores anteriores reaccionando con un ✅ (*check*).
 
-¡Gracias por tu atención y te deseamos un excelente trabajo!
+¡Agradecemos tu atención y te deseamos un excelente trabajo!
 _Atentamente,_  
 *Supervisión Corefone BR*
 `;
@@ -148,7 +148,7 @@ _Atentamente,_
  */
 async function processCSVData(data, channelId) {
   let messagesSent = 0;
-  let reportMessages = '';  // Armazena la lista de mensajes a ser enviada al canal
+  let reportMessages = '';  // Armazena a lista de mensagens a serem enviadas ao canal
 
   try {
     for (const row of data) {
@@ -164,7 +164,7 @@ async function processCSVData(data, channelId) {
       }
 
       try {
-        // Send message to the agent
+        // Envia mensagem para o agente
         const message = generateMessage(agentName, salary, faltas, feriadosTrabalhados);
         const result = await slackApp.client.chat.postMessage({
           channel: slackUserId,
@@ -174,10 +174,10 @@ async function processCSVData(data, channelId) {
         logger.info(`Message sent to ${agentName}`, { userId: slackUserId });
         messagesSent++;
 
-        // Add the report with the values sent to the channel
-        reportMessages += `\n*${agentName}:* Salario: US$${salary}, Faltas: ${faltas}, Feriados Trabajados: ${feriadosTrabalhados}`;
+        // Adiciona o relatório com os valores enviados para o canal
+        reportMessages += `\n*${agentName}:* Salario: US$${salary}, Ausencias: ${faltas}, Días Festivos Trabajados: ${feriadosTrabalhados}`;
         
-        // Store message details to track reactions
+        // Armazena as informações da mensagem para rastrear reações
         sentMessages.set(result.ts, {
           user: slackUserId,
           name: agentName,
@@ -187,11 +187,11 @@ async function processCSVData(data, channelId) {
       }
     }
 
-    // Send the confirmation to the channel, including the report
+    // Envia a confirmação ao canal, incluindo o relatório (em espanhol)
     if (channelId) {
       await slackApp.client.chat.postMessage({
         channel: channelId,
-        text: `¡Hoja procesada! ✅ Mensajes enviados: ${messagesSent}/${data.length}.\n\n*Detalles enviados:*${reportMessages}`,
+        text: `¡Archivo procesado! ✅ Mensajes enviados: ${messagesSent}/${data.length}.\n\n*Detalles enviados:*${reportMessages}`,
       });
     }
     
@@ -208,7 +208,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
     // Check if file was uploaded
     if (!req.file) {
       logger.info('No file uploaded');
-      return res.status(400).send('No se ha subido ningún archivo.');
+      return res.status(400).send('Ningún archivo fue enviado.');
     }
     
     const filePath = req.file.path;
@@ -224,10 +224,10 @@ app.post('/upload', upload.single('file'), async (req, res) => {
       if (err) logger.error(`Error deleting file: ${filePath}`, err);
     });
     
-    res.status(200).send('¡Hoja procesada exitosamente!');
+    res.status(200).send('¡Archivo procesado con éxito!');
   } catch (error) {
     logger.error('Error handling file upload', error);
-    res.status(500).send(`Error al procesar la hoja: ${error.message}`);
+    res.status(500).send(`Error al procesar el archivo: ${error.message}`);
   }
 });
 
@@ -267,10 +267,10 @@ slackApp.event('reaction_added', async ({ event, context }) => {
       if (slackUserId === user) {
         logger.info(`Confirmation received from ${name}`, { userId: slackUserId });
         
-        // Send confirmation to the admin channel
+        // Send confirmation to the admin channel (em espanhol)
         await slackApp.client.chat.postMessage({
           channel: process.env.ADMIN_CHANNEL_ID || process.env.CHANNEL_ID,
-          text: `El agente ${name} (<@${slackUserId}>) confirmó la recepción del salario y está de acuerdo con los valores.`,
+          text: `El agente ${name} (<@${slackUserId}>) ha confirmado la recepción del salario y está de acuerdo con los valores.`,
         });
       }
     }
@@ -289,15 +289,15 @@ slackApp.event('message', async ({ event, context, say }) => {
     if (event.channel_type === 'im') {
       logger.info(`DM received from user`, { userId: event.user, text: event.text.substring(0, 50) });
       
-      // Respond to the user
+      // Respond to the user (em espanhol)
       await say({
-        text: `¡Hola! Recibí tu mensaje. Si tienes dudas sobre tu pago, por favor contacta a la supervisión.`,
+        text: `¡Hola! He recibido tu mensaje. Si tienes dudas sobre tu pago, por favor contacta a la supervisión.`,
         blocks: [
           {
             type: "section",
             text: {
               type: "mrkdwn",
-              text: "¡Hola! Recibí tu mensaje. Si tienes dudas sobre tu pago, por favor contacta a la supervisión."
+              text: "¡Hola! He recibido tu mensaje. Si tienes dudas sobre tu pago, por favor contacta a la supervisión."
             }
           },
           {
@@ -371,7 +371,7 @@ slackApp.event('file_shared', async ({ event, context }) => {
   } catch (error) {
     logger.error('Error processing shared file', error);
     
-    // Notify about the error
+    // Notify about the error (em espanhol)
     if (event.channel_id) {
       try {
         await slackApp.client.chat.postMessage({
