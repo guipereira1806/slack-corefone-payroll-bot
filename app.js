@@ -5,15 +5,13 @@ const multer = require('multer');
 const fs = require('fs');
 const csv = require('csv-parser');
 const path = require('path');
+const axios = require('axios'); // Substituindo node-fetch por axios
 
 // Create upload directory if it doesn't exist
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
-
-// Import fetch for Node.js < 18.x
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -341,25 +339,23 @@ slackApp.event('file_shared', async ({ event, context }) => {
       return;
     }
     
-    // Download the file
+    // Download the file using axios instead of node-fetch
     const fileUrl = file.url_private_download;
     const fileName = `${Date.now()}-${file.name}`;
     const filePath = path.join(uploadDir, fileName);
     
     logger.info(`Downloading file`, { url: fileUrl, path: filePath });
     
-    const response = await fetch(fileUrl, {
+    const response = await axios({
+      method: 'get',
+      url: fileUrl,
+      responseType: 'arraybuffer',
       headers: {
         Authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`,
       },
     });
     
-    if (!response.ok) {
-      throw new Error(`Failed to download file: ${response.status} ${response.statusText}`);
-    }
-    
-    const arrayBuffer = await response.arrayBuffer();
-    fs.writeFileSync(filePath, Buffer.from(arrayBuffer));
+    fs.writeFileSync(filePath, response.data);
     
     // Process the CSV file
     const data = await readCsvFile(filePath);
