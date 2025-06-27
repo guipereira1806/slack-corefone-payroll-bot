@@ -114,7 +114,7 @@ Esperamos que estés bien. Pasamos por aquí para compartir los detalles de tu s
 *Valor del salario a pagar este mes:* US$${salary}
 
 *Instrucciones para la emisión de la factura:*
-• La factura debe emitirse hasta el _último día hábil del mes_.
+• La factura debe emitirse en el _último día hábil del mes_.
 • Al emitir la factura, incluye el mes de referencia. Sigue un ejemplo:
   \`\`\`
   Honorarios <mes> - Asesoramiento de atención al cliente 
@@ -124,7 +124,7 @@ Esperamos que estés bien. Pasamos por aquí para compartir los detalles de tu s
 • Ausencias: ${faltasText}.
 • Días festivos trabajados: ${feriadosText}.
 
-*Si no hay pendientes*, puedes emitir la factura con los valores anteriores hasta el último día hábil del mes. Por favor, envíe la factura a *corefone@domus.global*, con copia a *administracion@corefone.us*, *gilda.romero@corefone.us* y a los supervisores *maximiliano.varin@corefone.us*, *guilherme.santos@corefone.us* y *agustin.gonzalez@corefone.us*.
+*Si no hay pendientes*, puedes emitir la factura con los valores anteriores en el último día hábil del mes. Por favor, envíe la factura a *corefone@domus.global*, con copia a *administracion@corefone.us*, *gilda.romero@corefone.us* y a los supervisores *maximiliano.varin@corefone.us*, *guilherme.santos@corefone.us* y *agustin.gonzalez@corefone.us*.
 
 Por favor, confirma que has recibido este mensaje y estás de acuerdo con los valores anteriores reaccionando con un ✅ (*check*).
 
