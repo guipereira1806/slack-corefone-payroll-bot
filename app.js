@@ -124,7 +124,7 @@ Esperamos que estés bien. Pasamos por aquí para compartir los detalles de tu s
 • Ausencias: ${faltasText}.
 • Días festivos trabajados: ${feriadosText}.
 
-*Si no hay pendientes*, puedes emitir la factura con los valores anteriores en el último día hábil del mes. Por favor, envíe la factura a *corefone@domus.global*, con copia a *administracion@corefone.us*, *gilda.romero@corefone.us* y a los supervisores *maximiliano.varin@corefone.us*, *guilherme.santos@corefone.us* y *agustin.gonzalez@corefone.us*.
+*Si no hay pendientes*, puedes emitir la factura con los valores anteriores en el último día hábil del mes. Por favor, envíe la factura a *corefone@domus.global*, con copia a *administracion@corefone.us*, *gilda.romero@corefone.us* y a los supervisores *maximiliano.varin@corefone.us*, *guilherme.santos@corefone.us* y *mara.zuniga@corefone.us*.
 
 Por favor, confirma que has recibido este mensaje y estás de acuerdo con los valores anteriores reaccionando con un ✅ (*check*).
 
