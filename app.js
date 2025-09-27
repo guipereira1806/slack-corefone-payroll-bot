@@ -177,7 +177,7 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Si no hay pendientes*, puedes emitir la factura con los valores anteriores en el último día hábil del mes. Por favor, envíe la factura a `corefone@domus.global`, con copia a `maximiliano.varin@corefone.us,guilherme.santos@corefone.us,mara.zuniga@corefone.us`."
+                "text": "*Si no hay pendientes*, puedes emitir la factura con los valores anteriores en el último día hábil del mes. Por favor, envíe la factura a: \n\n• *Destinatário principal*: `corefone@domus.global`\n• *Com cópia (CC)*: `administracion@corefone.us`, `gilda.romero@corefone.us`, `maximiliano.varin@corefone.us`, `guilherme.santos@corefone.us`, `mara.zuniga@corefone.us`, `lucas.leite@corefone.us`."
             }
         },
         {
