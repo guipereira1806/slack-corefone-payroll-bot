@@ -90,12 +90,26 @@ function readCsvFile(filePath) {
     });
 }
 
-// --- FUNÇÃO DE GERAÇÃO DA MENSAGEM COM FORMATO EM ESPANHOL ---
+// --- FUNÇÃO DE GERAÇÃO DA MENSAGEM COM FORMATO EM ESPANHOL (ATUALIZADA) ---
 function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
     const faltasText = faltas > 0 ? (faltas === 1 ? `hubo *${faltas} ausencia*` : `hubo *${faltas} ausencias*`) : '*no hubo ausencias*';
     const feriadosText = feriadosTrabalhados > 0 ? (feriadosTrabalhados === 1 ? `trabajó en *${feriadosTrabalhados} día festivo*` : `trabajó en *${feriadosTrabalhados} días festivos*`) : '*no trabajó en ningún día festivo*';
-    const coreEmails = process.env.CORE_EMAILS || 'corefone@domus.global';
-    const supervisorEmails = process.env.SUPERVISOR_EMAILS || 'maximiliano.varin@corefone.us,guilherme.santos@corefone.us,mara.zuniga@corefone.us';
+    
+    // Lista completa de e-mails para emissão da fatura (corrigida)
+    const allInvoiceEmails = process.env.INVOICE_EMAILS ? process.env.INVOICE_EMAILS.split(',') : [
+        'corefone@domus.global',
+        'administracion@corefone.us', 
+        'gilda.romero@corefone.us', 
+        'maximiliano.varin@corefone.us',
+        'guilherme.santos@corefone.us', 
+        'mara.zuniga@corefone.us', 
+        'lucas.leite@corefone.us'
+    ];
+    
+    // Constrói a string de e-mails para a mensagem do Slack
+    const primaryEmail = allInvoiceEmails[0];
+    const ccEmails = allInvoiceEmails.slice(1).map(e => `\`${e.trim()}\``).join(', ');
+
 
     return [
         {
@@ -177,7 +191,8 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "*Si no hay pendientes*, puedes emitir la factura con los valores anteriores en el último día hábil del mes. Por favor, envíe la factura a: \n\n• *Destinatário principal*: `corefone@domus.global`\n• *Com cópia (CC)*: `administracion@corefone.us`, `gilda.romero@corefone.us`, `maximiliano.varin@corefone.us`, `guilherme.santos@corefone.us`, `mara.zuniga@corefone.us`, `lucas.leite@corefone.us`."
+                // NOVO TEXTO APLICADO AQUI
+                "text": "*Si no hay pendientes*, puedes emitir la factura con los valores anteriores en el último día hábil del mes. Por favor, envíe la factura a: \n\n• *Destinatário principal*: \`" + primaryEmail + "\`\n• *Com cópia (CC)*: " + ccEmails + "."
             }
         },
         {
@@ -228,7 +243,8 @@ async function processCSVData(data, channelId) {
                 trackMessage(result.ts, { user: slackUserId, name: agentName });
             } catch (error) {
                 logger.error(`Failed to send message to ${agentName} (${slackUserId})`, error);
-                failedUsers.push(agentName);
+                 // Melhoria: Captura o erro para o relatório de falhas
+                failedUsers.push(`${agentName} (Erro: ${error.data ? (error.data.error || 'Erro de API') : error.message})`);
             }
         }
         if (channelId) {
