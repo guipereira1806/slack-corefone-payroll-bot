@@ -95,8 +95,8 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
     const faltasText = faltas > 0 ? (faltas === 1 ? `hubo *${faltas} ausencia*` : `hubo *${faltas} ausencias*`) : '*no hubo ausencias*';
     const feriadosText = feriadosTrabalhados > 0 ? (feriadosTrabalhados === 1 ? `trabajó en *${feriadosTrabalhados} día festivo*` : `trabajó en *${feriadosTrabalhados} días festivos*`) : '*no trabajó en ningún día festivo*';
     
-    // Lista completa de e-mails para emissão da fatura (corrigida)
-    const allInvoiceEmails = process.env.INVOICE_EMAILS ? process.env.INVOICE_EMAILS.split(',') : [
+    // Lista padrão de e-mails (fallback)
+    const defaultInvoiceEmails = [
         'corefone@domus.global',
         'administracion@corefone.us', 
         'gilda.romero@corefone.us', 
@@ -106,9 +106,15 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
         'lucas.leite@corefone.us'
     ];
     
-    // Constrói a string de e-mails para a mensagem do Slack
-    const primaryEmail = allInvoiceEmails[0];
-    const ccEmails = allInvoiceEmails.slice(1).map(e => `\`${e.trim()}\``).join(', ');
+    // Tenta usar a variável de ambiente INVOICE_EMAILS para a lista restrita
+    const invoiceEmailsString = process.env.INVOICE_EMAILS;
+    const allInvoiceEmails = invoiceEmailsString 
+        ? invoiceEmailsString.split(',').map(e => e.trim()) 
+        : defaultInvoiceEmails;
+    
+    // Separação dos e-mails (principal e cópias)
+    const primaryEmail = allInvoiceEmails[0] || 'corefone@domus.global'; 
+    const ccEmails = allInvoiceEmails.slice(1).map(e => `\`${e}\``).join(', ');
 
 
     return [
@@ -191,7 +197,7 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                // NOVO TEXTO APLICADO AQUI
+                // NOVO TEXTO APLICADO AQUI USANDO AS VARIÁVEIS RESTRICTED
                 "text": "*Si no hay pendientes*, puedes emitir la factura con los valores anteriores en el último día hábil del mes. Por favor, envíe la factura a: \n\n• *Destinatário principal*: \`" + primaryEmail + "\`\n• *Com cópia (CC)*: " + ccEmails + "."
             }
         },
