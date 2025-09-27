@@ -90,7 +90,7 @@ function readCsvFile(filePath) {
     });
 }
 
-// --- FUNÇÃO DE GERAÇÃO DA MENSAGEM COM FORMATO EM ESPANHOL (ATUALIZADA) ---
+// --- FUNÇÃO DE GERAÇÃO DA MENSAGEM COM FORMATO EM ESPANHOL (CORRIGIDA) ---
 function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
     const faltasText = faltas > 0 ? (faltas === 1 ? `hubo *${faltas} ausencia*` : `hubo *${faltas} ausencias*`) : '*no hubo ausencias*';
     const feriadosText = feriadosTrabalhados > 0 ? (feriadosTrabalhados === 1 ? `trabajó en *${feriadosTrabalhados} día festivo*` : `trabajó en *${feriadosTrabalhados} días festivos*`) : '*no trabajó en ningún día festivo*';
@@ -170,6 +170,7 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
+                // CORRIGIDO: Garantindo que o código do exemplo está em espanhol
                 "text": "```\nHonorarios <mes> - Asesoramiento de atención al cliente\n```"
             }
         },
@@ -180,7 +181,8 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": `Envía el anexo con el nombre en este formato:\n"Nombre Apellido - Mes.Año"`
+                // CORRIGIDO: Usando 'archivo adjunto' (arquivo adjunto)
+                "text": `Envía el archivo adjunto con el nombre en este formato:\n"Nombre Apellido - Mes.Año"`
             }
         },
         {
@@ -197,8 +199,7 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                // NOVO TEXTO APLICADO AQUI USANDO AS VARIÁVEIS RESTRICTED
-                "text": "*Si no hay pendientes*, puedes emitir la factura con los valores anteriores en el último día hábil del mes. Por favor, envíe la factura a: \n\n• *Destinatário principal*: \`" + primaryEmail + "\`\n• *Com cópia (CC)*: " + ccEmails + "."
+                "text": "*Si no hay pendientes*, puedes emitir la factura con los valores anteriores en el último día hábil del mes. Por favor, envíe la factura a: \n\n• *Destinatario principal*: \`" + primaryEmail + "\`\n• *Con copia (CC)*: " + ccEmails + "."
             }
         },
         {
@@ -212,6 +213,7 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
+                // CORRIGIDO: Assinatura em espanhol
                 "text": "¡Agradecemos tu atención y te deseamos un excelente trabajo!\nAtentamente,\n*Supervisión Corefone AR/LATAM*"
             }
         }
@@ -249,7 +251,6 @@ async function processCSVData(data, channelId) {
                 trackMessage(result.ts, { user: slackUserId, name: agentName });
             } catch (error) {
                 logger.error(`Failed to send message to ${agentName} (${slackUserId})`, error);
-                 // Melhoria: Captura o erro para o relatório de falhas
                 failedUsers.push(`${agentName} (Erro: ${error.data ? (error.data.error || 'Erro de API') : error.message})`);
             }
         }
