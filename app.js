@@ -16,7 +16,7 @@ const CONSTANTS = {
 const CSV_COLS = {
     SLACK_ID: 'Slack User',
     NAME: 'Name',
-    SALARY: 'Salary',
+    SALARY: 'Salary', // Mantido como 'Salary' para mapear a coluna do CSV
     FALTAS: 'Faltas',
     FERIADOS: 'Feriados Trabalhados'
 };
@@ -90,7 +90,7 @@ function readCsvFile(filePath) {
     });
 }
 
-// --- FUNÇÃO DE GERAÇÃO DA MENSAGEM COM FORMATO EM ESPANHOL (CORRIGIDA) ---
+// --- FUNÇÃO DE GERAÇÃO DA MENSAGEM COM FORMATO EM ESPANHOL (MODIFICADA) ---
 function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
     const faltasText = faltas > 0 ? (faltas === 1 ? `hubo *${faltas} ausencia*` : `hubo *${faltas} ausencias*`) : '*no hubo ausencias*';
     const feriadosText = feriadosTrabalhados > 0 ? (feriadosTrabalhados === 1 ? `trabajó en *${feriadosTrabalhados} día festivo*` : `trabajó en *${feriadosTrabalhados} días festivos*`) : '*no trabajó en ningún día festivo*';
@@ -139,7 +139,8 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": "Esperamos que estés bien. Pasamos por aquí para compartir los detalles de tu salario correspondiente a este mes."
+                // *** CORREÇÃO APLICADA AQUI (MENSAGEM AO AGENTE) ***
+                "text": "Esperamos que estés bien. Pasamos por aquí para compartir los detalles del importe a facturar correspondiente a este mes."
             }
         },
         {
@@ -149,7 +150,8 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                "text": `*Valor a pagar:* *US$${salary}*`
+                // *** MODIFICAÇÃO PRINCIPAL APLICADA AQUI ***
+                "text": `*Importe a facturar por el servicio prestado en el mes:* *US$${salary}*`
             }
         },
         {
@@ -170,7 +172,6 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                // CORRIGIDO: Garantindo que o código do exemplo está em espanhol
                 "text": "```\nHonorarios <mes> - Asesoramiento de atención al cliente\n```"
             }
         },
@@ -181,7 +182,6 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                // CORRIGIDO: Usando 'archivo adjunto' (arquivo adjunto)
                 "text": `Envía el archivo adjunto con el nombre en este formato:\n"Nombre Apellido - Mes.Año"`
             }
         },
@@ -213,7 +213,6 @@ function generateMessage(name, salary, faltas = 0, feriadosTrabalhados = 0) {
             "type": "section",
             "text": {
                 "type": "mrkdwn",
-                // CORRIGIDO: Assinatura em espanhol
                 "text": "¡Agradecemos tu atención y te deseamos un excelente trabajo!\nAtentamente,\n*Supervisión Corefone AR/LATAM*"
             }
         }
@@ -247,7 +246,8 @@ async function processCSVData(data, channelId) {
                 });
                 logger.info(`Message sent to ${agentName}`, { userId: slackUserId });
                 messagesSent++;
-                reportDetails.push(`• *${agentName}:* Salario: US$${salary}, Ausencias: ${faltas}, Días Festivos: ${feriadosTrabalhados}`);
+                // *** CORREÇÃO APLICADA AQUI (RELATÓRIO INTERNO) ***
+                reportDetails.push(`• *${agentName}:* Valor a Facturar: US$${salary}, Ausencias: ${faltas}, Días Festivos: ${feriadosTrabalhados}`);
                 trackMessage(result.ts, { user: slackUserId, name: agentName });
             } catch (error) {
                 logger.error(`Failed to send message to ${agentName} (${slackUserId})`, error);
@@ -293,7 +293,8 @@ slackApp.event('reaction_added', async ({ event }) => {
             if (slackUserId === user) {
                 logger.info(`Confirmation received from ${name}`, { userId: slackUserId });
                 const adminChannel = process.env.ADMIN_CHANNEL_ID || process.env.CHANNEL_ID;
-                await slackApp.client.chat.postMessage({ channel: adminChannel, text: `El agente ${name} (<@${slackUserId}>) ha confirmado la recepción del salario y está de acuerdo con los valores.` });
+                // *** CORREÇÃO APLICADA AQUI (CONFIRMAÇÃO DO AGENTE AO ADMIN) ***
+                await slackApp.client.chat.postMessage({ channel: adminChannel, text: `El agente ${name} (<@${slackUserId}>) ha confirmado la recepción del importe a facturar y está de acuerdo con los valores.` });
             }
         }
     } catch (error) {
